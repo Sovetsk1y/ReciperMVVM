@@ -25,9 +25,10 @@ final class ListRecipeViewController: UITableViewController {
     
     private func setupViews() {
         tableView.tableFooterView = UIView()
+        tableView.allowsSelection = false
         view.backgroundColor = viewModel.viewBackgroundColor
         navigationItem.title = viewModel.navigationBarTitle
-        navigationItem.rightBarButtonItem = UIBarButtonItem(barButtonSystemItem: .add, target: self, action: nil)
+        navigationItem.rightBarButtonItem = UIBarButtonItem(barButtonSystemItem: .add, target: self, action: #selector(addRecipeButtonDidTap))
     }
     
     private func fetchRecipes() {
@@ -39,6 +40,17 @@ final class ListRecipeViewController: UITableViewController {
             self.tableView.reloadData()
         }
     }
+    
+    //MARK: - @objc Funcs
+    
+    @objc private func addRecipeButtonDidTap() {
+        let newRecipeViewController = NewRecipeViewController()
+        newRecipeViewController.viewModel = NewRecipeViewModel()
+        newRecipeViewController.viewModel.delegate = self
+        present(newRecipeViewController, animated: true, completion: nil)
+    }
+    
+    //MARK: - Table View Delegate, Data Source
     
     override func numberOfSections(in tableView: UITableView) -> Int {
         return  1
@@ -57,11 +69,16 @@ final class ListRecipeViewController: UITableViewController {
     }
     
     override func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-        return viewModel!.cellHeight
+        return viewModel.cellHeight
     }
     
-    override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        tableView.deselectRow(at: indexPath, animated: false)
+}
+
+//MARK: - Extensions
+
+extension ListRecipeViewController: NewRecipeDelegate {
+    func newRecipeDidAdd(_ recipe: RecipeModel) {
+        recipeCells.append(RecipeCellViewModel(recipe: recipe))
+        tableView.reloadData()
     }
-    
 }

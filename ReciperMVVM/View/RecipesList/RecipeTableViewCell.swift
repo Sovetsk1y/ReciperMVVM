@@ -16,6 +16,12 @@ final class RecipeTableViewCell: UITableViewCell {
             nameLabel.text = recipeCellViewModel.recipeName
             cookingTimeLabel.text = recipeCellViewModel.cookingTimeText
             tagListView.addTags(recipeCellViewModel.tags ?? [])
+            
+            DispatchQueue.main.async {
+                if let data = self.recipeCellViewModel.dishImage {
+                    self.dishImageView.image = UIImage(data: data)
+                }
+            }
         }
     }
     
@@ -29,6 +35,7 @@ final class RecipeTableViewCell: UITableViewCell {
     private var dishImageView: UIImageView = {
         let imageView = UIImageView()
         imageView.layer.cornerRadius = 22
+        imageView.clipsToBounds = true
         imageView.tintColor = .black
         imageView.backgroundColor = #colorLiteral(red: 0.8549019608, green: 0.6470588235, blue: 0.1254901961, alpha: 1)
         imageView.image = #imageLiteral(resourceName: "dishEmptyImage")
@@ -50,6 +57,7 @@ final class RecipeTableViewCell: UITableViewCell {
         tagListView.paddingX = 8
         tagListView.paddingY = 4
         tagListView.marginY = 10
+        tagListView.clipsToBounds = true
         tagListView.isUserInteractionEnabled = false
         return tagListView
     }()
@@ -67,12 +75,20 @@ final class RecipeTableViewCell: UITableViewCell {
         return button
     }()
     
+    //MARK: - Private Funcs
+    
+    private func setFavouriteButtonColor() {
+        favouriteButton.tintColor = recipeCellViewModel.favouriteButtonColor()
+    }
+    
     private func setupViews() {
         backgroundColor = recipeCellViewModel.cellBackgroundColor
         let backgroundView = UIView()
         backgroundView.backgroundColor = .clear
         selectedBackgroundView = backgroundView
         clipsToBounds = true
+        
+        favouriteButton.addTarget(self, action: #selector(favouriteDidTap), for: .touchUpInside)
         
         addSubview(nameLabel)
         addSubview(dishImageView)
@@ -84,18 +100,29 @@ final class RecipeTableViewCell: UITableViewCell {
         dishImageView.anchor(top: topAnchor, leading: leadingAnchor, trailing: nil, bottom: nil, size: .init(width: 45, height: 45), padding: .init(top: 13, left: 8, bottom: 0, right: 0))
         nameLabel.anchor(top: topAnchor, leading: dishImageView.trailingAnchor, trailing: nil, bottom: nil, size: .zero, padding: .init(top: 8, left: 12, bottom: 0, right: 0))
         cookingTimeLabel.anchor(top: nameLabel.bottomAnchor, leading: dishImageView.trailingAnchor, trailing: nil, bottom: nil, size: .zero, padding: .init(top: 0, left: 12, bottom: 0, right: 0))
-        
+        if recipeCellViewModel.cookingTimeText == nil {
+            cookingTimeLabel.isHidden = true
+        }
         if tagListView.tagViews.count != 0 {
-            tagListView.anchor(top: cookingTimeLabel.bottomAnchor, leading: dishImageView.trailingAnchor, trailing: trailingAnchor, bottom: bottomAnchor, size: .zero, padding: .init(top: 3, left: 12, bottom: 6, right: 12))
+            tagListView.anchor(top: cookingTimeLabel.bottomAnchor, leading: dishImageView.trailingAnchor, trailing: trailingAnchor, bottom: nil, size: .init(width: 0, height: 20), padding: .init(top: 4, left: 12, bottom: 0, right: 12))
         } else {
             tagListView.anchor(top: nil, leading: dishImageView.trailingAnchor, trailing: trailingAnchor, bottom: bottomAnchor, size: .zero, padding: .init(top: 6, left: 12, bottom: 6, right: 12))
         }
         
         accessoryViewButton.anchor(top: topAnchor, leading: nil, trailing: trailingAnchor, bottom: nil, size: .init(width: 21, height: 21), padding: .init(top: 8, left: 0, bottom: 0, right: 8))
         favouriteButton.anchor(top: topAnchor, leading: nameLabel.trailingAnchor, trailing: nil, bottom: nil, size: .init(width: 18, height: 18), padding: .init(top: 8, left: 4, bottom: 0, right: 0))
+        setFavouriteButtonColor()
+    }
+    
+    //MARK: - @objc Funcs
+    
+    @objc private func favouriteDidTap() {
+        setFavouriteButtonColor()
     }
 
 }
+
+//MARK: - Extensions
 
 extension RecipeTableViewCell {
     func configure(recipeCellViewModel: RecipeCellViewModel) {

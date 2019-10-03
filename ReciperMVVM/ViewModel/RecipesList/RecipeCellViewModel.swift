@@ -9,7 +9,7 @@
 import UIKit
 
 struct RecipeCellViewModel {
-    private let recipe: RecipeModel
+    private var recipe: RecipeModel
     
     init(recipe: RecipeModel) {
         self.recipe = recipe
@@ -21,22 +21,18 @@ struct RecipeCellViewModel {
         }
     }
     
-    var cookingTimeText: String {
+    var cookingTimeText: String? {
         get {
-            if let cookingTimeInSeconds = recipe.cookingTime {
-                let cookingTimeInMinutes = cookingTimeInSeconds / 60
-                return "Время приготовления: \(cookingTimeInMinutes)"
+            if let cookingTimeInMinutes = recipe.cookingTime {
+                return "Время приготовления: \(cookingTimeInMinutes) мин."
             }
-            return "Время приготовления: 0"
+            return nil
         }
     }
     
-    var dishImage: UIImage? {
+    var dishImage: Data? {
         get {
-            if let imageData = recipe.image {
-                return UIImage(data: imageData)
-            }
-            return nil
+            return recipe.image
         }
     }
     
@@ -46,9 +42,13 @@ struct RecipeCellViewModel {
         }
     }
     
-    var recipeIsFavourite: Bool {
-        get {
-            return recipe.isFavourite
+    mutating func favouriteButtonColor() -> UIColor {
+        if recipe.isFavourite {
+            recipe.isFavourite = false
+            return #colorLiteral(red: 0.5019607843, green: 0.5019607843, blue: 0.5019607843, alpha: 1)
+        } else {
+            recipe.isFavourite = true
+            return #colorLiteral(red: 1, green: 0.5019607843, blue: 0, alpha: 1)
         }
     }
     
